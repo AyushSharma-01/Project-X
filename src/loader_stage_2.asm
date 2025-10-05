@@ -32,7 +32,8 @@ main:
     mov es, ax
 
     ; Safe stack setup (below stage2)
-    mov ss, 0x0000
+    mov ax, 0x0000
+    mov ss, ax
     mov sp, 0x7BFF
 
     ; Print message
