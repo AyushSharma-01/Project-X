@@ -21,8 +21,8 @@ stage_2:
     mov al, 1             ; read 1 sector
     int 13h
 
-    jc handle_error        ; if CF=1, error
-    call done
+    jc .handle_error       ; if CF=1, error
+    call .done
 
 .handle_error:
     mov al, ah            ; move BIOS error code to AL
