@@ -7,42 +7,44 @@ start:
     jmp main
 
 puts:
-    ; Save registers
-    push si
     push ax
+    push si
 
 .loop:
-    lodsb                  ; Load byte at DS:SI into AL and increment SI
-    or al, al              ; Check for null terminator
+    lodsb           ; load byte at DS:SI into AL, increment SI
+    or al, al
     jz .done
 
-    mov ah, 0x0E           ; BIOS teletype
+    mov ah, 0x0E    ; BIOS teletype function
     int 0x10
     jmp .loop
 
 .done:
-    pop ax
     pop si
+    pop ax
     ret
 
+
 main:
-    ; Data Segment pointing to stage2
+    ; Set data segment to stage2
     mov ax, 0x07E0
     mov ds, ax
     mov es, ax
 
-    ; Stack setup
-    mov ss, ax
+    ; Safe stack setup (below stage2)
+    mov ss, 0x0000
     mov sp, 0x7BFF
 
     ; Print message
     mov si, msg
     call puts
 
+; Halt CPU
+.halt:  
     hlt
-.halt:
     jmp .halt
 
 msg: db 'Hello world 2!', ENDL, 0
 
+; Pad stage2 to 512 bytes
 times 512-($-$$) db 0
