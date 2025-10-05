@@ -16,7 +16,7 @@ stage_2:
     mov es, ax            ; segment of stage2 (0x7E00 >> 4)
     mov bx, 0x0000        ; offset
     mov ch, 0             ; cylinder
-    mov cl, 1             ; sector (1-based)
+    mov cl, 2             ; sector
     mov dh, 0             ; head
     mov ah, 0x02          ; read sectors
     mov al, 1             ; read 1 sector
