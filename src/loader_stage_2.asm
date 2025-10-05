@@ -4,6 +4,9 @@ bits 16
 %DEFINE ENDL 0x0D, 0x0A
 
 start:
+    mov al, '2'
+    mov ah, 0x0E
+    int 0x10
     jmp main
 
 puts:
@@ -24,7 +27,6 @@ puts:
     pop ax
     ret
 
-
 main:
     ; Set data segment to stage2
     mov ax, 0x07E0
@@ -37,7 +39,7 @@ main:
     mov sp, 0x7BFF
 
     ; Print message
-    mov si, msg
+    lea si, [msg]    ; Load offset of msg into SI relative to DS
     call puts
 
 ; Halt CPU
@@ -49,4 +51,4 @@ msg: db 'Hello world 2!', ENDL, 0
 
 ; Pad stage2 to 512 bytes
 times 510-($-$$) db 0
-dw 0xAAAA
+dw 0xAAA
