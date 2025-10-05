@@ -12,7 +12,8 @@ stage_2:
     push ax
 
     ; Load stage2 from disk
-    mov es, 0x07E0        ; segment of stage2 (0x7E00 >> 4)
+    mov ax, 0x07E0        ; segment where stage2 will be loaded
+    mov es, ax            ; segment of stage2 (0x7E00 >> 4)
     mov bx, 0x0000        ; offset
     mov ch, 0             ; cylinder
     mov cl, 1             ; sector (1-based)
