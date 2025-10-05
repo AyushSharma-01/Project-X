@@ -27,8 +27,42 @@ stage_2:
 
 .handle_error:
     mov al, ah            ; move BIOS error code to AL
-    mov ah, 0x0E          ; teletype function
+
+    ; Print value of AL as hex
+    mov ah, 0x0E
+    mov bl, al
+    shr al, 4
+    add al, '0'
+    cmp al, '9'
+    jbe .print_high
+    add al, 7
+
+.print_high:
     int 0x10
+
+    mov al, bl
+    and al, 0x0F
+    add al, '0'
+    cmp al, '9'
+    jbe .print_low
+    add al, 7
+
+.print_low:
+    int 0x10
+
+    ; Print newline
+    mov si, endl_chars
+.print_endl:
+    lodsb
+    or al, al
+    jz .done_endl
+    mov ah, 0x0E
+    int 0x10
+    jmp .print_endl
+.done_endl:
+    ; continue
+
+endl_chars: db ENDL, 0
     jmp .halt
 
 .done:
