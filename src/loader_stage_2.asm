@@ -48,4 +48,5 @@ main:
 msg: db 'Hello world 2!', ENDL, 0
 
 ; Pad stage2 to 512 bytes
-times 512-($-$$) db 0
+times 510-($-$$) db 0
+dw 0xAAAA
