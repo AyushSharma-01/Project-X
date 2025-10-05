@@ -1,7 +1,7 @@
 org 0x7C00
 bits 16
 
-%DEFINE ENDL 0x0D, 0x0A
+%define ENDL 0x0D, 0x0A
 
 start:
     jmp main
@@ -22,10 +22,10 @@ stage_2:
     mov al, 1             ; read 1 sector
     int 13h
 
-    jc .handle_error       ; if CF=1, error
-    call .done
+    jc handle_error       ; if CF=1, error
+    call done
 
-.handle_error:
+handle_error:
     mov al, ah            ; move BIOS error code to AL
 
     ; Print value of AL as hex
@@ -34,46 +34,47 @@ stage_2:
     shr al, 4
     add al, '0'
     cmp al, '9'
-    jbe .print_high
+    jbe print_high
     add al, 7
 
-.print_high:
+print_high:
     int 0x10
 
     mov al, bl
     and al, 0x0F
     add al, '0'
     cmp al, '9'
-    jbe .print_low
+    jbe print_low
     add al, 7
 
-.print_low:
+print_low:
     int 0x10
 
     ; Print newline
     mov si, endl_chars
-.print_endl:
+
+print_endl:
     lodsb
     or al, al
-    jz .done_endl
+    jz done_endl
     mov ah, 0x0E
     int 0x10
-    jmp .print_endl
-.done_endl:
-    ; continue
+    jmp print_endl
 
-endl_chars: db ENDL, 0
-    jmp .halt
+done_endl:
+    jmp halt
 
-.done:
+done:
     ; Far jump to stage2 at 0x7E00
     push 0x0000           ; IP = 0x0000
     push 0x07E0           ; CS = 0x07E0
     retf
 
-.halt:
+halt:
     hlt
-    jmp .halt
+    jmp halt
+
+endl_chars: db ENDL, 0
 
 main:
     ; Set segments
@@ -87,5 +88,5 @@ main:
 
     call stage_2
 
-times 510-($-$$) db 0
-dw 0xAA55
+times 510 - ($ - $$) db 0
+dw 0xAA55                   ; Boot signature
