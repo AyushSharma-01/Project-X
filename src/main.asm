@@ -65,13 +65,8 @@ done_endl:
     jmp halt
 
 done:
-    mov al, '1'
-    mov ah, 0x0E
-    int 0x10
     ; Far jump to stage2 at 0x7E00
-    push 0x0000           ; IP = 0x0000
-    push 0x07E0           ; CS = 0x07E0
-    retf
+    jmp 0x07E0:0x0000
 
 halt:
     hlt
