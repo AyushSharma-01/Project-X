@@ -4,16 +4,14 @@ bits 16
 %DEFINE ENDL 0x0D, 0x0A
 
 start:
-    mov al, '2'
-    mov ah, 0x0E
-    int 0x10
     jmp main
 
 puts:
-    push ax
+    ; Save registers
     push si
+    push ax
 
-.loop:
+.loop:   
     lodsb           ; load byte at DS:SI into AL, increment SI
     or al, al
     jz .done
@@ -39,7 +37,7 @@ main:
     mov sp, 0x7BFF
 
     ; Print message
-    lea si, [msg]    ; Load offset of msg into SI relative to DS
+    lea si, (msg-0x7E00)   ; Load offset of msg into SI relative to DS(0x07E x 10)
     call puts
 
 ; Halt CPU
