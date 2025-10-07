@@ -6,7 +6,7 @@ bits 16
 start:
     jmp main
 
-puts:
+puts:                               ;prints msg
     ; Save registers
     push si
     push ax
@@ -40,13 +40,15 @@ main:
     lea si, (msg-0x7E00)   ; Load offset of msg into SI relative to DS(0x07E x 10)
     call puts
 
+
+
 ; Halt CPU
 .halt:  
     hlt
     jmp .halt
 
-msg: db 'Stage 2 works flawlessly!', ENDL, 0
+msg: db 'initializing protected mode...', ENDL, 0
 
 ; Pad stage2 to 512 bytes
 times 510-($-$$) db 0
-dw 0xAAA
+dw 0xAAAA
