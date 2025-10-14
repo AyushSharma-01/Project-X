@@ -48,7 +48,7 @@ print_high:
     add al, 7
 
 print_low:
-    int 0x10
+    int 0x10 
 
     ; Print newline
     mov si, endl_chars

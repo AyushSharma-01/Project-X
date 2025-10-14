@@ -49,6 +49,8 @@ main:
 
 msg: db 'initializing protected mode...', ENDL, 0
 
+GDT_Start
+
 ; Pad stage2 to 512 bytes
 times 510-($-$$) db 0
 dw 0xAAAA
