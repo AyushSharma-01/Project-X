@@ -13,7 +13,7 @@ entry:
     ; switch to protected mode
     cli                     ; 1 - Disable interrupts
     call EnableA20          ; 2 - Enable A20 gate
-    call ReadKernelTo1M     ; Load kernel to 1MB
+    call ReadKernel         ; Load kernel to 0x8000
     call LoadGDT            ; 3 - Load GDT
     
 
@@ -56,8 +56,8 @@ entry:
     jmp .loop
 
 .done:
-    ; jump to kernel entry point at (for example) 0x100000
-
+    ; jump to kernel entry point at 0x8000
+    jmp 08h:8000h
 
     ; go back to real mode if kernel jump failed
     jmp word 18h:.pmode16         ; 1 - jump to 16-bit protected mode segment
@@ -171,17 +171,98 @@ ScreenBuffer                        equ 0xB8000
 
 
 
-ReadKernelTo1M:
+ReadKernel:
     [bits 16]
+     
     ; Load kernel from disk to 0x100000 (1MB)
-    ret
+    sti
+
+    push ax
+    push bx
+    push cx
+    push dx
+    push si
+    push di
+    push es
+    push ds
+
+
+
+    mov ax, 0x0800       ; segment where kernel will be loaded
+    mov es, ax            ; segment of kernel 
+    mov bx, 0x00          ; offset
+    mov ch, 0             ; cylinder
+    mov cl, 3             ; sector
+    mov dh, 0             ; head
+    mov dl, 0x80          ; first hard disk
+    mov ah, 0x02          ; read sectors
+    mov al, 1             ; read 1 sector
+    int 13h
+
+
+    jc .handle_error       ; if CF=1, error
+    jmp .done_kernel_load
+
+.handle_error:
+    mov ah, 0x0E     ; BIOS teletype function
+    mov al, '3'      ; Character to print
+    int 0x10         ; Print '1' to indicate start of kernel load
+    mov al, ah            ; move BIOS error code to AL
+
+    ; Print value of AL as hex
+    mov ah, 0x0E
+    mov bl, al
+    shr al, 4
+    add al, '0'
+    cmp al, '9'
+    jbe .print_high
+    add al, 7
+
+.print_high:
+    int 0x10
+
+    mov al, bl
+    and al, 0x0F
+    add al, '0'
+    cmp al, '9'
+    jbe .print_low
+    add al, 7
+
+.print_low:
+    int 0x10 
+
+    ; Print newline
+    mov si, endl_chars
+
+.print_endl:
+    lodsb
+    or al, al
+    jz .done_endl
+    mov ah, 0x0E
+    int 0x10
+    jmp .print_endl
+
+.done_endl:
     hlt
+
+.done_kernel_load:
+
+    pop ds
+    pop es
+    pop di
+    pop si
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+
+    cli
+    ret
 
 
 
 LoadGDT:
     [bits 16]
-    
     lgdt [GDT]
     ret
 
@@ -234,6 +315,7 @@ GDT:  dw GDT - Global_Descriptor_Table - 1               ; limit = size of GDT
 
 initialise_script:    db "Protected Mode Initialised!!", 0
 disabled_script:   db "Protected Mode disabled!!", 0
+endl_chars: db 0Dh, 0Ah, 0
 
 
 

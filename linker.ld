@@ -3,7 +3,7 @@ ENTRY(kmain)
 SECTIONS
 {
     /* Physical memory address where the kernel is loaded */
-    . = 0x00100000;
+    . = 0x8000;
 
     /* --- Text/code section --- */
     .text ALIGN(4K) : {

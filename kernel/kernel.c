@@ -1,18 +1,11 @@
-// kernel.c
-#include <stdint.h>
-
-#define VGA_ADDRESS 0xB8000
-#define WHITE_ON_BLACK 0x0F
+#define VGA_ADDRESS 0xB80A0
 
 void kmain(void) {
-    char *video = (char*) VGA_ADDRESS;
-
-    const char *msg = "Kernel initialized successfully!";
-    for (int i = 0; msg[i] != '\0'; i++) {
-        video[i * 2] = msg[i];           // character
-        video[i * 2 + 1] = WHITE_ON_BLACK; // attribute byte
+    char *vga = (char*)VGA_ADDRESS;
+    vga[0] = 'K';           // Character
+    vga[1] = 0x4f;          // Attribute byte
+    while (1) {
+        // Halt the CPU to prevent it from running off
+        __asm__ __volatile__("hlt");
     }
-
-    // Loop forever so QEMU doesn't immediately quit
-    for(;;);
 }
