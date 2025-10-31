@@ -1,35 +1,22 @@
-ASM = nasm
+all: os-image.bin
 
-SRC_DIR = src
-BUILD_DIR = build
+boot/main.bin: boot/main.asm
+	nasm -f bin $< -o $@
 
-STAGE1 = $(SRC_DIR)/main.asm
-STAGE2 = $(SRC_DIR)/loader_stage_2.asm
+boot/loader_stage2.bin: boot/loader_stage2.asm
+	nasm -f bin $< -o $@
 
-STAGE1_BIN = $(BUILD_DIR)/main.bin
-STAGE2_BIN = $(BUILD_DIR)/loader_stage_2.bin
-FLOPPY_IMG = $(BUILD_DIR)/main_floppy.img
+kernel/kernel.o: kernel/kernel.c
+	gcc -m32 -ffreestanding -c $< -o $@
 
-# Default target
-all: $(FLOPPY_IMG)
+kernel.elf: kernel/kernel.o
+	ld -m elf_i386 -T linker.ld -o $@ $<
 
-# Ensure build directory exists
-$(BUILD_DIR):
-	mkdir -p $(BUILD_DIR)
+kernel.bin: kernel.elf
+	objcopy -O binary $< $@
 
-# Assemble stage1
-$(STAGE1_BIN): $(STAGE1) | $(BUILD_DIR)
-	$(ASM) $< -f bin -o $@
+os-image.bin: boot/main.bin boot/loader_stage2.bin kernel.bin
+	cat $^ > $@
 
-# Assemble stage2
-$(STAGE2_BIN): $(STAGE2) | $(BUILD_DIR)
-	$(ASM) $< -f bin -o $@
-
-# Build full floppy image: stage1 + stage2, then pad to 1.44MB
-$(FLOPPY_IMG): $(STAGE1_BIN) $(STAGE2_BIN)
-	cat $(STAGE1_BIN) $(STAGE2_BIN) > $@
-	truncate -s 1440k $@
-
-# Clean build artifacts
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -f boot/*.bin boot/*.o kernel/*.o kernel.elf kernel.bin os-image.bin

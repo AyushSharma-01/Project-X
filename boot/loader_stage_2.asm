@@ -13,7 +13,9 @@ entry:
     ; switch to protected mode
     cli                     ; 1 - Disable interrupts
     call EnableA20          ; 2 - Enable A20 gate
+    call ReadKernelTo1M     ; Load kernel to 1MB
     call LoadGDT            ; 3 - Load GDT
+    
 
     ; 4 - set protection enable flag in CR0
     mov eax, cr0
@@ -25,7 +27,7 @@ entry:
 
 
 .pmode:
-    ; we are now in protected mode!
+    ;protected mode code
     [bits 32]
     
     ; 6 - setup segment registers
@@ -35,7 +37,7 @@ entry:
 
 
     ; print confirmation to screen buffer
-    mov esi, g_Hello
+    mov esi, initialise_script
     mov edi, ScreenBuffer
     cld
 
@@ -54,9 +56,9 @@ entry:
     jmp .loop
 
 .done:
-    ; jump to kernel entry point at ...
-    
-    
+    ; jump to kernel entry point at (for example) 0x100000
+
+
     ; go back to real mode if kernel jump failed
     jmp word 18h:.pmode16         ; 1 - jump to 16-bit protected mode segment
 
@@ -80,8 +82,8 @@ entry:
     ; 5 - enable interrupts
     sti
 
-    ; print hello world using int 10h
-    mov si, g_HelloR
+    ; print disabled message
+    mov si, disabled_script
 
 .rloop:
     lodsb
@@ -156,17 +158,6 @@ A20WaitOutput:
     ret
 
 
-
-
-
-LoadGDT:
-    [bits 16]
-    lgdt [GDT]
-    ret
-
-
-
-
 ;kbd controllers ports and commands
 DataPort               equ 0x60
 CommandPort            equ 0x64
@@ -180,7 +171,25 @@ ScreenBuffer                        equ 0xB8000
 
 
 
-Global_Descriptor_Table:      ; NULL descriptor
+ReadKernelTo1M:
+    [bits 16]
+    ; Load kernel from disk to 0x100000 (1MB)
+    ret
+    hlt
+
+
+
+LoadGDT:
+    [bits 16]
+    
+    lgdt [GDT]
+    ret
+
+
+
+
+Global_Descriptor_Table:
+            ; NULL descriptor
             dq 0
 
             ; 32-bit code segment
@@ -223,8 +232,8 @@ GDT:  dw GDT - Global_Descriptor_Table - 1               ; limit = size of GDT
 
 
 
-g_Hello:    db "Protected Mode Initialised!!", 0
-g_HelloR:   db "Protected Mode Disabled!!", 0
+initialise_script:    db "Protected Mode Initialised!!", 0
+disabled_script:   db "Protected Mode disabled!!", 0
 
 
 
