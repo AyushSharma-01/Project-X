@@ -34,6 +34,12 @@ entry:
     mov ax, 0x10
     mov ds, ax
     mov ss, ax
+    mov es, ax
+    mov fs, ax
+    mov gs, ax
+
+    ; setup stack pointer
+    mov esp, 0x7BFF
 
 
     ; print confirmation to screen buffer

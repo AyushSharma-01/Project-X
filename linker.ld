@@ -2,10 +2,10 @@ ENTRY(kmain)
 
 SECTIONS
 {
-    /* Physical memory address where the kernel is loaded */
+    /* Where your kernel is loaded by the bootloader */
     . = 0x8000;
 
-    /* --- Text/code section --- */
+    /* --- Code section --- */
     .text ALIGN(4K) : {
         _kernel_start = .;
         *(.text*)
@@ -21,11 +21,18 @@ SECTIONS
         *(.data*)
     }
 
-    /* --- Uninitialized data (BSS) --- */
+    /* --- Uninitialized data --- */
     .bss ALIGN(4K) : {
         *(COMMON)
         *(.bss*)
     }
+
+    /* --- Stack (no load, reserved space) --- */
+    .stack (NOLOAD) : ALIGN(16) {
+    _stack_bottom = .;
+    . += 0x4000;         /* Reserve 16 KB */
+    _stack_top = 0x7BFF;
+}
 
     /* --- Kernel end symbols --- */
     _kernel_end = .;
